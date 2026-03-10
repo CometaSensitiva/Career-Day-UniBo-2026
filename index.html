@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Day Unibo 2026 — Dashboard Interattiva</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <script src="firebase-public-config.js"></script>
+    <script>
+        (function initFirebaseFromRuntimeConfig() {
+            const cfg = window.__FIREBASE_PUBLIC_CONFIG__;
+            const hasConfig = cfg && typeof cfg.apiKey === 'string' && cfg.apiKey.trim() !== '';
+            if (!hasConfig) {
+                window.fbAuth = null;
+                window.fbDb = null;
+                console.warn('Firebase non configurato. Controlla firebase-public-config.js.');
+                return;
+            }
+            try {
+                firebase.initializeApp(cfg);
+                window.fbAuth = firebase.auth();
+                window.fbDb = firebase.database();
+            } catch (err) {
+                window.fbAuth = null;
+                window.fbDb = null;
+                console.error('Errore inizializzazione Firebase:', err);
+            }
+        })();
+    </script>
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <!-- ============ HEADER ============ -->
+    <header class="bg-slate-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 py-3.5 flex items-center justify-between">
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">Career Day Unibo 2026</h1>
+                <p class="text-slate-400 text-xs mt-0.5">Padiglione 33 · <strong class="text-slate-300" id="header-count">174 aziende</strong></p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="login-btn" onclick="loginWithGoogle()" class="bg-white text-slate-800 text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors flex items-center gap-1.5">
+                    <svg width="14" height="14" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                    Accedi
+                </button>
+                <div id="user-info" class="hidden items-center gap-2">
+                    <img id="user-avatar" src="" referrerpolicy="no-referrer" class="w-7 h-7 rounded-full border-2 border-slate-500" alt="" onerror="this.style.display='none';document.getElementById('user-avatar-fallback').style.display='flex'">
+                    <div id="user-avatar-fallback" style="display:none" class="w-7 h-7 rounded-full border-2 border-slate-500 bg-slate-700 text-white text-[10px] font-bold items-center justify-center"></div>
+                    <span id="user-name" class="text-[11px] text-slate-300 font-medium max-w-[120px] truncate"></span>
+                    <button id="set-ai-key-btn" onclick="openAiKeyModal()" class="hidden bg-slate-700 hover:bg-slate-600 text-white text-[11px] font-medium px-2 py-1 rounded-md transition-colors">🔑 API AI</button>
+                    <a id="ai-key-help-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="hidden text-slate-400 hover:text-white text-[11px] transition-colors">Ottieni key gratis</a>
+                    <button id="clear-ai-key-btn" onclick="clearGeminiApiKey()" class="hidden text-slate-400 hover:text-white text-[11px] transition-colors">Rimuovi</button>
+                    <button onclick="logoutUser()" class="text-slate-400 hover:text-white text-[11px] transition-colors">Esci</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============ ONBOARDING ============ -->
+    <div id="onboarding-banner" class="onboarding-banner">
+        <div class="max-w-7xl mx-auto px-4 py-5 flex items-start gap-4">
+            <div class="flex-1">
+                <h2 class="text-base font-semibold text-slate-800">Preparati per il Career Day</h2>
+                <p class="text-sm text-slate-600 mt-1 leading-relaxed">Questa dashboard ti aiuta a organizzare la tua visita al Padiglione 33. Esplora la mappa, filtra le aziende per laurea, segna quelle che ti interessano e genera un itinerario ottimizzato per il giorno dell'evento.</p>
+                <div class="flex gap-6 mt-3 text-xs text-slate-500 font-medium">
+                    <span>🎓 Filtra per laurea</span>
+                    <span>⭐ Segna le aziende</span>
+                    <span>🗺️ Genera itinerario</span>
+                </div>
+            </div>
+            <button onclick="dismissOnboarding()" class="text-slate-400 hover:text-slate-600 text-lg leading-none mt-0.5 flex-shrink-0" title="Chiudi">✕</button>
+        </div>
+    </div>
+
+    <!-- ============ MAIN ============ -->
+    <main class="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6">
+
+        <!-- MAPPA -->
+        <section class="bg-white rounded-xl border border-slate-200 p-2 md:p-5">
+            <div class="mb-4 px-3 pt-2 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-800">Planimetria Padiglione 33</h3>
+                    <p class="text-slate-400 text-xs mt-0.5">Stand colorati = aziende presenti. Clicca per filtrare, trascina per scorrere.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="reset-map-btn" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium py-2 px-3 rounded-lg text-xs transition-colors border border-slate-200 flex items-center gap-1.5">
+                        <span class="text-base leading-none">&times;</span> Annulla
+                    </button>
+                    <div class="flex items-center bg-indigo-600 rounded-lg overflow-hidden">
+                        <button onclick="generateItinerary()" class="hover:bg-indigo-700 text-white font-medium py-2 px-3.5 text-xs transition-colors flex items-center gap-1.5">
+                            🗺️ Itinerario
+                        </button>
+                        <select id="route-mode" class="bg-indigo-700 text-white text-[11px] font-medium py-2 px-2 border-l border-indigo-500 cursor-pointer focus:outline-none">
+                            <option value="priority">🏆 Priorità</option>
+                            <option value="smooth">🚶 Fluido</option>
+                        </select>
+                    </div>
+                    <button id="clear-route-btn" onclick="clearRoute()" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium py-2 px-3 rounded-lg text-xs transition-colors border border-slate-200">
+                        ✕ Rimuovi
+                    </button>
+                    <button id="export-route-btn" onclick="exportRouteImage()" class="hidden bg-slate-800 hover:bg-slate-900 text-white font-medium py-2 px-3 rounded-lg text-xs transition-colors flex items-center gap-1.5">
+                        📥 PNG
+                    </button>
+                </div>
+            </div>
+
+            <!-- Itinerary panel -->
+            <div id="itinerary-panel" class="hidden mt-4 mx-3 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <div class="bg-slate-800 px-5 py-3 flex items-center justify-between">
+                    <h4 class="text-sm font-bold text-white flex items-center gap-2">🗺️ Il tuo itinerario</h4>
+                    <div class="flex items-center gap-3 text-[10px] text-slate-300">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span> Alta</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span> Media</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-indigo-400 inline-block"></span> Bassa / Int.</span>
+                    </div>
+                </div>
+                <div id="itinerary-list" class="p-4 space-y-1"></div>
+            </div>
+
+            <div class="map-wrapper rounded-lg border border-slate-200 p-6 relative overflow-x-auto hide-scroll" id="map-scroll-container">
+                <div id="pavilion-map-layout" class="min-w-[1000px] flex flex-col items-center pb-24"></div>
+            </div>
+            <div class="text-center mt-2.5 text-[10px] text-slate-400 font-medium uppercase tracking-widest">▲ Ingresso Principale Aldo Moro ▲</div>
+        </section>
+
+        <!-- STATISTICHE -->
+        <section class="bg-white rounded-xl border border-slate-200 px-6 py-3.5">
+            <div class="flex items-center justify-center gap-8 flex-wrap">
+                <div class="flex flex-col items-center"><span class="text-xl font-bold text-slate-800" id="total-companies-count">0</span><span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">Aziende</span></div>
+                <div class="w-px h-7 bg-slate-200"></div>
+                <div class="flex flex-col items-center"><span class="text-xl font-bold text-emerald-600" id="total-laurea-count">0</span><span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider" id="total-laurea-label">Laurea</span></div>
+                <div class="w-px h-7 bg-slate-200"></div>
+                <div class="flex flex-col items-center"><span class="text-xl font-bold text-amber-600" id="total-roles-count">0</span><span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">Ruoli</span></div>
+                <div class="w-px h-7 bg-slate-200"></div>
+                <div class="flex flex-col items-center"><span class="text-xl font-bold text-indigo-600" id="total-visit-count">0</span><span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">Presentarsi</span></div>
+                <div class="w-px h-7 bg-slate-200"></div>
+                <button id="export-interested-btn" onclick="exportInterestedCompanies()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-200 transition-colors flex items-center gap-1.5">📋 Esporta interessate</button>
+            </div>
+        </section>
+
+        <!-- FILTRI + GRIGLIA -->
+        <section>
+            <div class="mb-5 bg-white p-3.5 rounded-xl border border-slate-200 flex flex-col md:flex-row gap-2.5">
+                <div class="flex-1 relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-lg">⌕</span>
+                    <input type="text" id="searchInput" placeholder="Cerca per nome, ruolo o stand..." class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 focus:border-indigo-400 focus:ring focus:ring-indigo-100 focus:ring-opacity-50 transition-colors bg-white text-sm">
+                </div>
+                <select id="sectorFilter" class="w-full md:w-48 px-3 py-2.5 rounded-lg border border-slate-200 focus:border-indigo-400 focus:ring focus:ring-indigo-100 focus:ring-opacity-50 transition-colors bg-white text-sm">
+                    <option value="all">Tutti i Settori</option>
+                </select>
+                <select id="laureaFilter" class="w-full md:w-56 px-3 py-2.5 rounded-lg border border-slate-200 focus:border-indigo-400 focus:ring focus:ring-indigo-100 focus:ring-opacity-50 transition-colors bg-white text-sm">
+                    <option value="all">🎓 Filtra per Laurea...</option>
+                </select>
+                <div id="laureaSubFilter" class="w-full md:w-48 hidden">
+                    <select id="laureaMatchFilter" class="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-indigo-400 focus:ring focus:ring-indigo-100 focus:ring-opacity-50 transition-colors bg-white text-sm">
+                        <option value="all">Mostra tutti</option>
+                        <option value="true">✅ Cercano</option>
+                        <option value="non_specificato">⚠️ Non specificate</option>
+                        <option value="false">❌ Non cercano</option>
+                    </select>
+                </div>
+                <select id="interestFilter" class="w-full md:w-52 px-3 py-2.5 rounded-lg border border-slate-200 focus:border-indigo-400 focus:ring focus:ring-indigo-100 focus:ring-opacity-50 transition-colors bg-white text-sm">
+                    <option value="hide_not_interested">Nascondi non interessati</option>
+                    <option value="all">Mostra tutti</option>
+                    <option value="interested_only">Solo interessati</option>
+                    <option value="not_interested_only">Solo non interessati</option>
+                    <option value="visit_only">🎯 Solo presentarsi</option>
+                </select>
+            </div>
+
+            <div id="no-results" class="hidden text-center py-16 bg-white rounded-xl border border-slate-200">
+                <span class="text-3xl block mb-3">🔍</span>
+                <p class="text-lg font-medium text-slate-600">Nessuna azienda trovata.</p>
+                <button id="reset-filters" class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-5 rounded-lg text-sm">Reimposta filtri</button>
+            </div>
+
+            <div id="company-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+        </section>
+
+    </main>
+
+    <footer class="text-center text-xs text-slate-400 py-4 border-t border-slate-100">
+        Questo sito usa localStorage per salvare le tue preferenze. Con il login Google, i dati vengono sincronizzati su Firebase. Non utilizziamo cookie di tracciamento.
+    </footer>
+
+    <div id="ai-key-modal" onclick="handleAiKeyModalBackdrop(event)" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-[1px] flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-2xl">
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-slate-800">Configura API key AI</h3>
+                <button onclick="closeAiKeyModal()" class="text-slate-400 hover:text-slate-700 text-lg leading-none" aria-label="Chiudi">&times;</button>
+            </div>
+            <div class="px-5 py-4 space-y-3">
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Usa una tua Gemini API key personale (salvata solo su questo browser).
+                    <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-700 font-medium">Ottieni key gratis</a>
+                </p>
+                <div>
+                    <label for="ai-key-input" class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Gemini API key</label>
+                    <div class="flex gap-2">
+                        <input id="ai-key-input" type="password" autocomplete="off" spellcheck="false" class="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400" placeholder="AIza...">
+                        <button id="ai-key-visibility-btn" onclick="toggleAiKeyVisibility()" class="px-2.5 py-2 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50">Mostra</button>
+                    </div>
+                </div>
+                <p id="ai-key-modal-feedback" class="hidden text-xs font-medium"></p>
+            </div>
+            <div class="px-5 py-4 border-t border-slate-100 flex items-center justify-between gap-2">
+                <button id="ai-key-modal-clear-btn" onclick="clearGeminiApiKey()" class="text-xs text-rose-600 hover:text-rose-700 font-medium">Rimuovi key</button>
+                <div class="flex items-center gap-2">
+                    <button onclick="closeAiKeyModal()" class="px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50">Annulla</button>
+                    <button onclick="saveGeminiApiKeyFromModal()" class="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg">Salva key</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

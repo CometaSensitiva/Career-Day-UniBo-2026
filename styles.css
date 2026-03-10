@@ -1,0 +1,269 @@
+/* ========================================
+   Career Day Unibo 2026 - Stylesheet
+   Design: Modern Minimal / Professional
+   ======================================== */
+
+/* === Theme === */
+:root {
+    --primary: #4f46e5;
+    --primary-light: #e0e7ff;
+    --primary-dark: #3730a3;
+    --surface: #ffffff;
+    --bg: #f8fafc;
+    --text: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --border: #e2e8f0;
+    --success: #16a34a;
+    --danger: #dc2626;
+}
+
+/* === Base === */
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow-x: hidden;
+}
+
+/* === Cards === */
+.card-hover {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* ========================================
+   MAP - Padiglione 33
+   ======================================== */
+.map-wrapper {
+    background-color: #f1f5f9;
+    background-image: radial-gradient(#cbd5e1 0.5px, transparent 0.5px);
+    background-size: 16px 16px;
+    cursor: grab;
+}
+.map-wrapper:active { cursor: grabbing; }
+
+/* --- Stand Boxes --- */
+.stand-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.55rem;
+    line-height: 1.1;
+    font-weight: 700;
+    text-align: center;
+    border-radius: 3px;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+.stand-box.occupied {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+    border: 1px solid var(--primary);
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    z-index: 10;
+}
+.stand-box.occupied:hover {
+    background-color: var(--primary);
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(79, 70, 229, 0.3);
+}
+
+/* Z-INDEX FIX: hovered stand above route SVG.
+   The on-route class must NOT set z-index to avoid conflicting with hover. */
+.stand-box:hover {
+    z-index: 90 !important;
+}
+.stand-box:hover .map-tooltip {
+    z-index: 100 !important;
+}
+/* Raise parent container above SVG (z-index 40) when a stand is hovered */
+#pavilion-map-layout > div:has(.stand-box:hover) {
+    position: relative;
+    z-index: 50;
+}
+
+/* --- Laurea Accent States --- */
+.stand-box.gestionale-accent-true,
+.stand-box.gestionale-accent-unspecified,
+.stand-box.gestionale-accent-false {
+    color: #ffffff !important;
+    z-index: 22;
+}
+.stand-box.gestionale-accent-true {
+    background-color: #10b981 !important;
+    border-color: #047857 !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.35);
+}
+.stand-box.gestionale-accent-unspecified {
+    background-color: #f59e0b !important;
+    border-color: #b45309 !important;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.35);
+}
+.stand-box.gestionale-accent-false {
+    background-color: #ef4444 !important;
+    border-color: #b91c1c !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35);
+}
+.stand-box.muted-by-gestionale { opacity: 0.35; }
+.stand-box.muted-by-gestionale:hover { opacity: 0.9; }
+
+/* --- Interest Accent States --- */
+.stand-box.interest-accent-interested {
+    background-color: #10b981 !important;
+    border-color: #047857 !important;
+    color: #fff !important;
+    z-index: 22;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.35);
+}
+.stand-box.interest-accent-not-interested {
+    background-color: #ef4444 !important;
+    border-color: #b91c1c !important;
+    color: #fff !important;
+    z-index: 22;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35);
+}
+.stand-box.interest-accent-visit {
+    background-color: #06b6d4 !important;
+    border-color: #0e7490 !important;
+    color: #fff !important;
+    z-index: 22;
+    box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.35);
+}
+.stand-box.muted-by-interest { opacity: 0.35; }
+.stand-box.muted-by-interest:hover { opacity: 0.9; }
+
+/* --- Filter/Highlight States --- */
+.stand-box.active-filter {
+    background-color: #f59e0b !important;
+    color: white !important;
+    border-color: #b45309 !important;
+    transform: scale(1.1);
+    z-index: 30;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.3);
+    animation: pulse-amber 2s infinite;
+}
+.stand-box.highlighted {
+    background-color: var(--primary) !important;
+    color: white !important;
+    transform: scale(1.15);
+    z-index: 25;
+    box-shadow: 0 8px 12px rgba(79, 70, 229, 0.35);
+}
+.stand-box.active-filter,
+.stand-box.highlighted {
+    opacity: 1 !important;
+}
+
+@keyframes pulse-amber {
+    0%   { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+    70%  { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+/* ========================================
+   MAP TOOLTIP
+   ======================================== */
+.map-tooltip {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(calc(-50% + var(--tooltip-offset-x, 0px)));
+    width: min(250px, calc(100vw - 24px));
+    background: var(--text);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    line-height: 1.3;
+    text-align: left;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s;
+    pointer-events: none;
+    z-index: 50;
+}
+.map-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent var(--text) transparent;
+}
+.map-tooltip.map-tooltip--top {
+    top: auto;
+    bottom: calc(100% + 8px);
+}
+.map-tooltip.map-tooltip--top::after {
+    top: 100%;
+    bottom: auto;
+    border-color: var(--text) transparent transparent transparent;
+}
+.stand-box:hover .map-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ========================================
+   ROUTE OVERLAY
+   ======================================== */
+.route-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 40;
+}
+.route-line {
+    stroke: var(--primary);
+    stroke-width: 2.5;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 6 3;
+}
+.route-marker {
+    font-size: 11px;
+    font-weight: 800;
+    fill: white;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+.route-marker-bg {
+    fill: var(--primary);
+    stroke: white;
+    stroke-width: 2;
+}
+.route-marker-bg.priority-high   { fill: #dc2626; }
+.route-marker-bg.priority-medium { fill: #f59e0b; }
+
+/* On-route stands: ring only, NO z-index (prevents hover conflict) */
+.stand-box.on-route {
+    box-shadow: 0 0 0 3px var(--primary), 0 0 8px rgba(79, 70, 229, 0.4) !important;
+}
+
+/* ========================================
+   SCROLLBAR
+   ======================================== */
+.hide-scroll::-webkit-scrollbar { height: 6px; }
+.hide-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+.hide-scroll::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+
+/* ========================================
+   ONBOARDING BANNER
+   ======================================== */
+.onboarding-banner {
+    background: linear-gradient(135deg, var(--primary-light) 0%, #f8fafc 100%);
+    border-bottom: 1px solid var(--border);
+}

@@ -1,0 +1,8 @@
+index_v1_backup.html
+__pycache__/
+.DS_Store
+.vscode/
+Curriculum/
+local-config.js
+tools/
+docs/
