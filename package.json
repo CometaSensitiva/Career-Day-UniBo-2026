@@ -1,0 +1,15 @@
+{
+  "name": "career-day-unibo-dashboard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:tailwind": "npx @tailwindcss/cli -i tailwind.input.css -o tailwind.generated.css --minify",
+    "check:js": "node --check app.js && node --check js/dashboard/main.js && node --check js/dashboard/render.js && node --check js/dashboard/route.js && node --check js/dashboard/ai.js && node --check js/dashboard/data.js && node --check js/dashboard/preferences.js && node --check js/dashboard/store.js && node --check js/shared/constants.js && node --check js/shared/contracts.js && node --check js/shared/dom.js && node --check js/shared/firebase.js && node --check js/shared/sanitize.js",
+    "check:py": "python3 -m py_compile tools/add_stands.py tools/descr_scraper.py tools/logo_scraper.py tools/update_dashboard.py tools/validate_dataset.py",
+    "validate:data": "python3 tools/validate_dataset.py --input aziende_dettagli.json --logos-dir logos --stand-map tools/stand_map_2026.json"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.2.1",
+    "tailwindcss": "^4.2.1"
+  }
+}

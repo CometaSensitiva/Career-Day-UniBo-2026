@@ -4,5 +4,6 @@ __pycache__/
 .vscode/
 Curriculum/
 local-config.js
-tools/
-docs/
+AI_CONTEXT.md
+node_modules/
+.firebase/

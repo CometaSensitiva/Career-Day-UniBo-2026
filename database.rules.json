@@ -1,0 +1,41 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      "$uid": {
+        "preferences": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid",
+          "interests": {
+            "$companyId": {
+              ".validate": "newData.isString() && (newData.val() === 'interested' || newData.val() === 'not_interested')"
+            }
+          },
+          "visits": {
+            "$companyId": {
+              ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 5"
+            }
+          },
+          "applicationOnline": {
+            "$companyId": {
+              ".validate": "newData.val() === true"
+            }
+          },
+          "interestsUpdatedAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "visitsUpdatedAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "applicationOnlineUpdatedAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": "$other === 'interests' || $other === 'visits' || $other === 'applicationOnline' || $other === 'interestsUpdatedAt' || $other === 'visitsUpdatedAt' || $other === 'applicationOnlineUpdatedAt'"
+          }
+        }
+      }
+    }
+  }
+}
