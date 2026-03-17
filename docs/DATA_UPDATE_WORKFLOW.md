@@ -1,4 +1,6 @@
-# Aggiornamento Dashboard (Anno per Anno)
+# Data Update Workflow
+
+Aggiornamento dashboard anno per anno: dataset, stand, loghi e validazione finale.
 
 Questa guida serve per aggiornare dataset, stand e loghi del Career Day con un comando unico e poi validare il risultato.
 

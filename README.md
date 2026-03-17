@@ -2,19 +2,33 @@
 
 Dashboard web per orientarsi tra le aziende del Career Day UniBo: filtri, mappa stand, preferenze personali, itinerario e supporto AI.
 
+## Documentazione
+
+Per navigare la documentazione del progetto:
+
+- [Documentation Index](docs/README.md)
+- [Architecture Overview](docs/ARCHITECTURE.md)
+- [Data Update Workflow](docs/DATA_UPDATE_WORKFLOW.md)
+
 ## Screenshot
 
 ### Dashboard overview
 
 ![Dashboard overview](docs/screenshots/dashboard-overview.png)
 
+Vista generale della dashboard con ricerca, filtri, card aziende e contatori.
+
 ### Itinerario e mappa
 
 ![Itinerario e mappa](docs/screenshots/dashboard-route.png)
 
+Mappa stand con itinerario di visita ed export visuale.
+
 ### Scheda azienda
 
 ![Scheda azienda](docs/screenshots/company-card.png)
+
+Scheda singola con link utili, Info AI, valutazione interesse e pianificazione visita.
 
 ## Cosa fa
 
@@ -62,10 +76,6 @@ Workflow consigliato:
 4. esegui i check locali
 5. verifica la dashboard in browser
 
-Documentazione operativa:
-
-- [Dashboard Update Workflow](docs/DASHBOARD_UPDATE_WORKFLOW.md)
-
 ## Struttura repository
 
 ```text
@@ -79,6 +89,10 @@ Documentazione operativa:
 ├── tools/
 ├── logos/
 ├── docs/
+│   ├── README.md
+│   ├── ARCHITECTURE.md
+│   ├── DATA_UPDATE_WORKFLOW.md
+│   └── screenshots/
 ├── database.rules.json
 └── aziende_dettagli.json
 ```
