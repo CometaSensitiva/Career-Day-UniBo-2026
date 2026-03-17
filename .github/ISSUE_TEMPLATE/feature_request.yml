@@ -1,0 +1,43 @@
+name: Feature request
+description: Proponi una miglioria di UI, UX, dati o tool.
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema o opportunità
+      description: Che limite hai notato?
+      placeholder: I filtri funzionano, ma la UX non è abbastanza chiara.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposta
+      description: Che cosa vorresti aggiungere o cambiare?
+      placeholder: Vorrei un filtro con ricerca interna per il corso di laurea.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area del progetto
+      options:
+        - Dashboard UI/UX
+        - Itinerario e mappa
+        - AI overview
+        - Dataset e scraper
+        - Firebase e autenticazione
+        - Repository / GitHub
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impatto atteso
+      description: Perché questa modifica sarebbe utile?

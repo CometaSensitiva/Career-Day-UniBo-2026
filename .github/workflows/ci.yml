@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build CSS
+        run: npm run build:tailwind
+
+      - name: Check JavaScript syntax
+        run: npm run check:js
+
+      - name: Check Python syntax
+        run: npm run check:py
+
+      - name: Validate dataset
+        run: npm run validate:data

@@ -1,0 +1,56 @@
+name: Bug report
+description: Segnala un problema nel dashboard, nei filtri, nell'AI o nei tool.
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Problema
+      description: Spiega in una frase cosa non funziona.
+      placeholder: Il pulsante PNG non scarica il file.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passi per riprodurre
+      description: Elenca i passaggi esatti.
+      placeholder: |
+        1. Apro la dashboard
+        2. Genero un itinerario
+        3. Clicco "Esporta PNG"
+        4. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamento atteso
+      placeholder: Mi aspetto che inizi il download del PNG.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Comportamento attuale
+      placeholder: Compare un alert di errore e non parte il download.
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Ambiente
+      description: Browser, OS o info utili.
+      placeholder: Chrome 135 su macOS
+
+  - type: textarea
+    id: extras
+    attributes:
+      label: Console / screenshot
+      description: Incolla errori console o aggiungi contesto extra.

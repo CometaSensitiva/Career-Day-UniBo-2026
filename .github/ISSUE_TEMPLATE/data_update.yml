@@ -1,0 +1,37 @@
+name: Data update
+description: Richiedi o documenta un aggiornamento del dataset aziende.
+title: "[Data] "
+labels:
+  - data
+body:
+  - type: input
+    id: source_url
+    attributes:
+      label: URL sorgente
+      description: Pagina da cui recuperare i nuovi dati.
+      placeholder: https://eventi.unibo.it/careerday/aziende-partecipanti-2027
+    validations:
+      required: true
+
+  - type: input
+    id: event_name
+    attributes:
+      label: Evento / anno
+      placeholder: Career Day UniBo 2027
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_changes
+    attributes:
+      label: Cosa va aggiornato
+      description: Se lo sai, indica dataset, stand map, loghi o docs.
+      placeholder: Aggiornare aziende_dettagli.json, loghi e mappa stand.
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Note aggiuntive
+      description: Vincoli, stand speciali, mismatch noti, ecc.
