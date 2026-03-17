@@ -1,4 +1,4 @@
-import { $, clearChildren, createEl, safeScrollIntoView } from '../shared/dom.js?v=20260317-15';
+import { $, clearChildren, createEl, safeScrollIntoView } from '../shared/dom.js?v=20260317-23';
 
 export function getStandPosition(standId, mapLayout) {
     const node = $(`stand-${standId}`);

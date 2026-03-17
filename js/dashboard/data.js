@@ -1,4 +1,4 @@
-import { normalizeCompanyRecord } from '../shared/contracts.js?v=20260317-15';
+import { normalizeCompanyRecord } from '../shared/contracts.js?v=20260317-23';
 
 export async function loadCompanyData() {
     const candidateUrls = [];

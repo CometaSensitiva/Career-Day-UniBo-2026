@@ -1,4 +1,4 @@
-import { initDashboard } from './js/dashboard/main.js?v=20260317-15';
+import { initDashboard } from './js/dashboard/main.js?v=20260317-23';
 
 document.addEventListener('DOMContentLoaded', () => {
     initDashboard().catch((error) => {

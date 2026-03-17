@@ -3,9 +3,9 @@ import {
     INTEREST_STORAGE_KEY,
     PREFERENCES_META_STORAGE_KEY,
     VISIT_STORAGE_KEY
-} from '../shared/constants.js?v=20260317-15';
-import { getFbDb } from '../shared/firebase.js?v=20260317-15';
-import { normalizePreferences } from '../shared/contracts.js?v=20260317-15';
+} from '../shared/constants.js?v=20260317-23';
+import { getFbDb } from '../shared/firebase.js?v=20260317-23';
+import { normalizePreferences } from '../shared/contracts.js?v=20260317-23';
 
 const SECTION_KEYS = ['interests', 'visits', 'applicationOnline'];
 

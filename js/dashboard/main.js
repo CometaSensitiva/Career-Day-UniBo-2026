@@ -1,8 +1,8 @@
-import { getFbAuth, getFirebaseInitError, initFirebaseFromRuntimeConfig } from '../shared/firebase.js?v=20260317-15';
-import { bindDomReferences, getCompanyById, setCompanyData, state } from './store.js?v=20260317-15';
-import { filterCompanies, populateFilters, renderArchitecturalMap, renderDatasetLoadError } from './render.js?v=20260317-15';
-import { buildRouteStops, clearRouteVisuals, drawRoute, exportRouteImage, optimizeRoute, renderItineraryPanel, scrollToStand } from './route.js?v=20260317-15';
-import { loadCompanyData } from './data.js?v=20260317-15';
+import { getFbAuth, getFirebaseInitError, initFirebaseFromRuntimeConfig } from '../shared/firebase.js?v=20260317-23';
+import { bindDomReferences, getCompanyById, setCompanyData, state } from './store.js?v=20260317-23';
+import { filterCompanies, initializeCustomFilterSelects, populateFilters, renderArchitecturalMap, renderDatasetLoadError, syncCustomFilterSelects } from './render.js?v=20260317-23';
+import { buildRouteStops, clearRouteVisuals, drawRoute, exportRouteImage, optimizeRoute, renderItineraryPanel, scrollToStand } from './route.js?v=20260317-23';
+import { loadCompanyData } from './data.js?v=20260317-23';
 import {
     getApplicationOnlineFlag,
     getCompanyInterest,
@@ -13,7 +13,7 @@ import {
     setApplicationOnlineFlag,
     setCompanyInterest,
     setVisitScore
-} from './preferences.js?v=20260317-15';
+} from './preferences.js?v=20260317-23';
 import {
     clearCompanyExplainCache,
     clearGeminiApiKey,
@@ -28,9 +28,9 @@ import {
     saveGeminiApiKeyFromModal,
     toggleAiKeyVisibility,
     updateAiKeyControls
-} from './ai.js?v=20260317-15';
-import { initialsFromUser, safeScrollIntoView } from '../shared/dom.js?v=20260317-15';
-import { ONBOARDING_KEY } from '../shared/constants.js?v=20260317-15';
+} from './ai.js?v=20260317-23';
+import { initialsFromUser, safeScrollIntoView } from '../shared/dom.js?v=20260317-23';
+import { ONBOARDING_KEY } from '../shared/constants.js?v=20260317-23';
 
 let scheduledFilterRender = 0;
 
@@ -60,7 +60,9 @@ function syncFiltersFromDom() {
 
 function applyFiltersAndRender() {
     syncFiltersFromDom();
-    return filterCompanies(state, getPreferenceDeps());
+    const filtered = filterCompanies(state, getPreferenceDeps());
+    syncCustomFilterSelects(state);
+    return filtered;
 }
 
 function scheduleFilterRender() {
@@ -557,6 +559,7 @@ export async function initDashboard() {
     }
 
     populateFilters(state);
+    initializeCustomFilterSelects(state);
     renderArchitecturalMap(state, { onMapStandClick: handleMapStandClick });
     attachGlobalListeners();
     applyFiltersAndRender();

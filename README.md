@@ -2,6 +2,20 @@
 
 Dashboard web per orientarsi tra le aziende del Career Day UniBo: filtri, mappa stand, preferenze personali, itinerario e supporto AI.
 
+## Screenshot
+
+### Dashboard overview
+
+![Dashboard overview](docs/screenshots/dashboard-overview.png)
+
+### Itinerario e mappa
+
+![Itinerario e mappa](docs/screenshots/dashboard-route.png)
+
+### Scheda azienda
+
+![Scheda azienda](docs/screenshots/company-card.png)
+
 ## Cosa fa
 
 - Ricerca e filtri per settore, corso di laurea, compatibilita e preferenze.

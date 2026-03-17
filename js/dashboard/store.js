@@ -1,5 +1,5 @@
-import { normalizePreferences } from '../shared/contracts.js?v=20260317-15';
-import { $, setText } from '../shared/dom.js?v=20260317-15';
+import { normalizePreferences } from '../shared/contracts.js?v=20260317-23';
+import { $, setText } from '../shared/dom.js?v=20260317-23';
 
 export const state = {
     companies: [],

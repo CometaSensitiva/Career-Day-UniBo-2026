@@ -1,10 +1,24 @@
-import { $, clearChildren, createEl } from '../shared/dom.js?v=20260317-15';
-import { escapeHtml, getHostFromUrl, getRootHost, linkifyPlainUrls, normalizeHttpUrl, renderMarkdown } from '../shared/sanitize.js?v=20260317-15';
-import { companyHasLaurea } from './data.js?v=20260317-15';
+import { $, clearChildren, createEl } from '../shared/dom.js?v=20260317-23';
+import { escapeHtml, getHostFromUrl, getRootHost, linkifyPlainUrls, normalizeHttpUrl, renderMarkdown } from '../shared/sanitize.js?v=20260317-23';
+import { companyHasLaurea } from './data.js?v=20260317-23';
+
+const FILTER_SELECT_IDS = ['sectorFilter', 'laureaFilter', 'laureaMatchFilter', 'interestFilter'];
+let activeUiSelect = null;
+let uiSelectListenersBound = false;
 
 export function populateFilters(state) {
     populateSectorFilter(state);
     populateLaureaFilter(state);
+}
+
+export function initializeCustomFilterSelects(state) {
+    bindUiSelectDismissal();
+    FILTER_SELECT_IDS.forEach((id) => mountCustomNativeSelect(state.dom[id]));
+    syncCustomFilterSelects(state);
+}
+
+export function syncCustomFilterSelects(state) {
+    FILTER_SELECT_IDS.forEach((id) => syncCustomNativeSelect(state.dom[id]));
 }
 
 export function renderDatasetLoadError(state, error) {
@@ -63,7 +77,7 @@ export function renderGrid(state, deps) {
             else if (laureaStatus === 'non_specificato') indicators.push('<span class="company-card__indicator company-card__indicator--unknown">Da verificare</span>');
         }
         if (visitScore > 0) indicators.push(`<span class="company-card__indicator company-card__indicator--priority">Priorità ${'★'.repeat(visitScore)}</span>`);
-        if (isApplicationOnline) indicators.push('<span class="company-card__indicator company-card__indicator--info">Solo online</span>');
+        if (isApplicationOnline) indicators.push('<span class="company-card__indicator company-card__indicator--info">Applica online</span>');
         if (interestFlag === 'interested') indicators.push('<span class="company-card__indicator company-card__indicator--match">Selezionata</span>');
         else if (interestFlag === 'not_interested') indicators.push('<span class="company-card__indicator company-card__indicator--negative">Esclusa</span>');
 
@@ -73,12 +87,23 @@ export function renderGrid(state, deps) {
         const notInterestedBtnClass = interestFlag === 'not_interested'
             ? 'company-card__choice company-card__choice--negative is-active'
             : 'company-card__choice company-card__choice--negative';
-        const visitBtnClass = visitScore
-            ? 'company-card__priority-select is-active'
-            : 'company-card__priority-select';
         const onlineToggleBtnClass = isApplicationOnline
             ? 'company-card__tertiary is-active'
             : 'company-card__tertiary';
+        const planningDisabled = isApplicationOnline || !company.hasConfirmedStand;
+        const priorityHelpText = isApplicationOnline
+            ? 'Applica online attivo'
+            : company.hasConfirmedStand
+                ? '1 bassa · 5 alta'
+                : 'Stand in attesa di conferma';
+        const priorityOptionsHtml = Array.from({ length: 5 }, (_, index) => {
+            const score = index + 1;
+            const optionClass = visitScore === score
+                ? 'ui-select__option is-selected'
+                : 'ui-select__option';
+            return `<button type="button" data-action="set-visit" data-company-id="${company.id}" data-value="${score}" class="${optionClass}" ${planningDisabled ? 'disabled' : ''} aria-pressed="${visitScore === score ? 'true' : 'false'}" aria-label="Imposta priorità visita ${score} su 5" title="Priorità ${score} su 5">${getPriorityOptionLabel(score)}</button>`;
+        }).join('');
+        const priorityTriggerLabel = getPriorityTriggerLabel(visitScore, isApplicationOnline, company.hasConfirmedStand);
         const aiPanelState = state.ui.aiPanels[String(company.id)] || null;
         const currentExplainCacheKey = getExplainCacheKeyForRender(state, company.id);
         const aiCached = aiPanelState?.cacheKey ? state.ui.aiCache[aiPanelState.cacheKey] : state.ui.aiCache[currentExplainCacheKey];
@@ -184,7 +209,7 @@ export function renderGrid(state, deps) {
             <div class="company-card__details company-card__details--research">
                 <div id="explain-${company.id}" class="${aiContainerClasses}">
                     <div class="${aiLoaderClasses}"><div class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div><p class="text-[10px] text-slate-400 mt-1">Cerco informazioni online...</p></div>
-                    <div class="${aiAreaClasses}"><div class="explain-text bg-indigo-50 border border-indigo-200 rounded-lg p-3 text-xs text-slate-700 leading-relaxed max-h-48 overflow-y-auto"></div></div>
+                    <div class="${aiAreaClasses}"><div class="explain-text bg-indigo-50 border border-indigo-200 rounded-lg p-3 text-xs text-slate-700 leading-relaxed"></div></div>
                     <div class="${aiErrorClasses}">${aiErrorText}</div>
                 </div>
                 ${aboutHtml}
@@ -215,15 +240,18 @@ export function renderGrid(state, deps) {
                     </div>
                 </div>
                 <div class="company-card__toolbar company-card__toolbar--planning">
-                    <select data-action="set-visit" data-company-id="${company.id}" ${isApplicationOnline || !company.hasConfirmedStand ? 'disabled' : ''} class="${visitBtnClass}">
-                        <option value="0" ${visitScore === 0 ? 'selected' : ''}>${isApplicationOnline ? 'Solo online' : company.hasConfirmedStand ? 'Priorità visita' : 'Stand atteso'}</option>
-                        <option value="1" ${visitScore === 1 ? 'selected' : ''}>★☆☆☆☆</option>
-                        <option value="2" ${visitScore === 2 ? 'selected' : ''}>★★☆☆☆</option>
-                        <option value="3" ${visitScore === 3 ? 'selected' : ''}>★★★☆☆</option>
-                        <option value="4" ${visitScore === 4 ? 'selected' : ''}>★★★★☆</option>
-                        <option value="5" ${visitScore === 5 ? 'selected' : ''}>★★★★★</option>
-                    </select>
-                    <button type="button" data-action="toggle-online" data-company-id="${company.id}" data-value="${isApplicationOnline ? 'false' : 'true'}" class="${onlineToggleBtnClass}" aria-pressed="${isApplicationOnline ? 'true' : 'false'}" title="${isApplicationOnline ? 'Disattiva la modalita solo online' : 'Attiva la modalita solo online'}">Solo online</button>
+                    <div class="company-card__priority-control">
+                        <div class="ui-select ui-select--priority ${planningDisabled ? 'is-disabled' : ''}" data-ui-select>
+                            <button type="button" data-action="toggle-priority-menu" class="ui-select__trigger company-card__priority-trigger" ${planningDisabled ? 'disabled' : ''} aria-haspopup="listbox" aria-expanded="false">
+                                <span class="ui-select__trigger-label">${escapeHtml(priorityTriggerLabel)}</span>
+                            </button>
+                            <div class="ui-select__menu hidden" role="listbox">
+                                ${priorityOptionsHtml}
+                            </div>
+                        </div>
+                        <p class="company-card__priority-help">${priorityHelpText}</p>
+                    </div>
+                    <button type="button" data-action="toggle-online" data-company-id="${company.id}" data-value="${isApplicationOnline ? 'false' : 'true'}" class="${onlineToggleBtnClass}" aria-pressed="${isApplicationOnline ? 'true' : 'false'}" title="${isApplicationOnline ? 'Disattiva la candidatura solo online' : 'Attiva la candidatura solo online'}">Applica online</button>
                 </div>
                 ${(visitScore > 0 || isApplicationOnline) ? `<button type="button" data-action="reset-planning" data-company-id="${company.id}" class="company-card__reset">Azzera pianificazione</button>` : ''}
                 ${standNotice}
@@ -241,8 +269,20 @@ export function renderGrid(state, deps) {
                 deps.onSetInterest(company.id, button.dataset.value);
             });
         });
-        card.querySelector('[data-action="set-visit"]')?.addEventListener('change', (event) => {
-            deps.onSetVisit(company.id, event.target.value);
+        const prioritySelect = card.querySelector('.ui-select--priority');
+        card.querySelector('[data-action="toggle-priority-menu"]')?.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (!prioritySelect || prioritySelect.classList.contains('is-disabled')) return;
+            toggleUiSelect(prioritySelect);
+        });
+        card.querySelectorAll('[data-action="set-visit"]').forEach((button) => {
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                if (prioritySelect) closeUiSelect(prioritySelect);
+                deps.onSetVisit(company.id, button.dataset.value);
+            });
         });
         card.querySelector('[data-action="toggle-online"]')?.addEventListener('click', (event) => {
             event.preventDefault();
@@ -419,6 +459,171 @@ function populateLaureaFilter(state) {
         }
         state.dom.laureaFilter.appendChild(option);
     });
+}
+
+function getPriorityTriggerLabel(visitScore, isApplicationOnline, hasConfirmedStand) {
+    if (isApplicationOnline) return 'Applica online';
+    if (!hasConfirmedStand) return 'Stand atteso';
+    if (visitScore > 0) return `Priorità ${visitScore}/5`;
+    return 'Priorità visita';
+}
+
+function getPriorityOptionLabel(score) {
+    return `Priorità ${score} · ${'★'.repeat(score)}${'☆'.repeat(5 - score)}`;
+}
+
+function mountCustomNativeSelect(select) {
+    if (!select || select.dataset.customSelectReady === 'true') return;
+    bindUiSelectDismissal();
+    select.dataset.customSelectReady = 'true';
+    select.classList.add('ui-select__native');
+
+    const wrapper = createEl('div', {
+        className: 'ui-select ui-select--filter',
+        attrs: {
+            'data-ui-select': '',
+            'data-select-id': select.id
+        }
+    });
+    const trigger = createEl('button', {
+        className: 'ui-select__trigger',
+        attrs: {
+            type: 'button',
+            'aria-haspopup': 'listbox',
+            'aria-expanded': 'false'
+        }
+    });
+    trigger.appendChild(createEl('span', { className: 'ui-select__trigger-label' }));
+    const menu = createEl('div', {
+        className: 'ui-select__menu hidden',
+        attrs: { role: 'listbox' }
+    });
+    wrapper.appendChild(trigger);
+    wrapper.appendChild(menu);
+    select.insertAdjacentElement('afterend', wrapper);
+
+    trigger.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (wrapper.classList.contains('is-disabled')) return;
+        toggleUiSelect(wrapper);
+    });
+}
+
+function syncCustomNativeSelect(select) {
+    if (!select) return;
+    const wrapper = select.parentElement?.querySelector(`.ui-select--filter[data-select-id="${select.id}"]`);
+    if (!wrapper) return;
+
+    const trigger = wrapper.querySelector('.ui-select__trigger');
+    const label = wrapper.querySelector('.ui-select__trigger-label');
+    const menu = wrapper.querySelector('.ui-select__menu');
+    if (!trigger || !label || !menu) return;
+
+    wrapper.classList.toggle('is-disabled', select.disabled);
+    trigger.disabled = select.disabled;
+    label.textContent = select.options[select.selectedIndex]?.textContent?.trim() || '';
+
+    clearChildren(menu);
+    Array.from(select.options).forEach((option) => {
+        const optionButton = createEl('button', {
+            className: option.selected ? 'ui-select__option is-selected' : 'ui-select__option',
+            text: option.textContent?.trim() || '',
+            attrs: {
+                type: 'button',
+                role: 'option',
+                'aria-selected': option.selected ? 'true' : 'false'
+            }
+        });
+        optionButton.disabled = select.disabled || option.disabled;
+        optionButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            closeUiSelect(wrapper);
+            if (select.value !== option.value) {
+                select.value = option.value;
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            syncCustomNativeSelect(select);
+        });
+        menu.appendChild(optionButton);
+    });
+}
+
+function bindUiSelectDismissal() {
+    if (uiSelectListenersBound) return;
+    uiSelectListenersBound = true;
+
+    document.addEventListener('click', (event) => {
+        const owner = event.target.closest('[data-ui-select]');
+        if (owner) return;
+        if (activeUiSelect) closeUiSelect(activeUiSelect);
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && activeUiSelect) {
+            closeUiSelect(activeUiSelect);
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        if (activeUiSelect) closeUiSelect(activeUiSelect);
+    });
+}
+
+function toggleUiSelect(wrapper) {
+    if (!wrapper) return;
+    if (activeUiSelect === wrapper) {
+        closeUiSelect(wrapper);
+        return;
+    }
+    if (activeUiSelect && activeUiSelect !== wrapper) {
+        closeUiSelect(activeUiSelect);
+    }
+    openUiSelect(wrapper);
+}
+
+function openUiSelect(wrapper) {
+    const trigger = wrapper.querySelector('.ui-select__trigger');
+    const menu = wrapper.querySelector('.ui-select__menu');
+    if (!trigger || !menu) return;
+    wrapper.classList.add('is-open');
+    trigger.setAttribute('aria-expanded', 'true');
+    menu.classList.remove('hidden');
+    positionUiSelectMenu(wrapper);
+    activeUiSelect = wrapper;
+}
+
+function closeUiSelect(wrapper) {
+    const trigger = wrapper?.querySelector('.ui-select__trigger');
+    const menu = wrapper?.querySelector('.ui-select__menu');
+    if (!trigger || !menu) return;
+    wrapper.classList.remove('is-open', 'ui-select--open-up', 'ui-select--open-down');
+    trigger.setAttribute('aria-expanded', 'false');
+    menu.style.maxHeight = '';
+    menu.classList.add('hidden');
+    if (activeUiSelect === wrapper) activeUiSelect = null;
+}
+
+function positionUiSelectMenu(wrapper) {
+    const trigger = wrapper.querySelector('.ui-select__trigger');
+    const menu = wrapper.querySelector('.ui-select__menu');
+    if (!trigger || !menu) return;
+
+    wrapper.classList.remove('ui-select--open-up', 'ui-select--open-down');
+    menu.style.maxHeight = '';
+
+    const viewportPadding = 12;
+    const triggerRect = trigger.getBoundingClientRect();
+    const availableAbove = Math.max(0, triggerRect.top - viewportPadding);
+    const availableBelow = Math.max(0, window.innerHeight - triggerRect.bottom - viewportPadding);
+    const desiredHeight = Math.min(menu.scrollHeight || 0, 320);
+    const minimumComfortSpace = Math.min(desiredHeight || 220, 220);
+    const openUp = availableBelow < minimumComfortSpace && availableAbove > availableBelow;
+    const chosenSpace = openUp ? availableAbove : availableBelow;
+
+    wrapper.classList.add(openUp ? 'ui-select--open-up' : 'ui-select--open-down');
+    menu.style.maxHeight = `${Math.max(96, Math.min(chosenSpace, 320))}px`;
 }
 
 function hydrateMapWithData(state, handlers) {

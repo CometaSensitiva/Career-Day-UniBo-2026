@@ -1,6 +1,6 @@
-import { GEMINI_CACHE_STORAGE, GEMINI_KEY_STORAGE } from '../shared/constants.js?v=20260317-15';
-import { setText, toggleHidden } from '../shared/dom.js?v=20260317-15';
-import { renderExplainContent } from './render.js?v=20260317-15';
+import { GEMINI_CACHE_STORAGE, GEMINI_KEY_STORAGE } from '../shared/constants.js?v=20260317-23';
+import { setText, toggleHidden } from '../shared/dom.js?v=20260317-23';
+import { renderExplainContent } from './render.js?v=20260317-23';
 
 function getGeminiStorageKey(currentUser) {
     return currentUser?.uid ? `${GEMINI_KEY_STORAGE}_${currentUser.uid}` : GEMINI_KEY_STORAGE;
@@ -254,6 +254,8 @@ Regole:
 - NON inventare URL.
 - Se non trovi nulla, scrivi: "Posizioni aperte: Non trovate con fonte verificabile".
 - Chiudi sempre con: "Cerca qui: ${fallback}".
+- Non lasciare mai frasi, paragrafi o sezioni troncate a metà.
+- Se devi essere più sintetico, riduci il dettaglio ma completa sempre il testo.
 
 Rispondi in italiano, chiaro, con sezioni e senza buzzwords.`
         });
@@ -309,7 +311,7 @@ function setAiKeyModalFeedback(state, message, isError = false) {
     state.dom.aiKeyModalFeedback.classList.add(isError ? 'text-rose-600' : 'text-emerald-600');
 }
 
-async function fetchExplain({ apiKey, prompt, attempt = 0 }) {
+async function fetchExplain({ apiKey, prompt, attempt = 0, maxOutputTokens = 2200 }) {
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 30000);
 
@@ -324,7 +326,7 @@ async function fetchExplain({ apiKey, prompt, attempt = 0 }) {
                 generationConfig: {
                     temperature: 0.2,
                     topP: 0.9,
-                    maxOutputTokens: 1200
+                    maxOutputTokens
                 }
             })
         });
@@ -332,7 +334,7 @@ async function fetchExplain({ apiKey, prompt, attempt = 0 }) {
         if (!response.ok) {
             if ([429, 500, 502, 503, 504].includes(response.status) && attempt < 2) {
                 await sleep(600 * (2 ** attempt));
-                return fetchExplain({ apiKey, prompt, attempt: attempt + 1 });
+                return fetchExplain({ apiKey, prompt, attempt: attempt + 1, maxOutputTokens });
             }
             const errorPayload = await safeJson(response);
             const apiMessage = errorPayload?.error?.message || errorPayload?.error || `Errore API: ${response.status}`;
@@ -340,12 +342,22 @@ async function fetchExplain({ apiKey, prompt, attempt = 0 }) {
         }
 
         const data = await response.json();
-        const text = data?.candidates?.[0]?.content?.parts
+        const candidate = data?.candidates?.[0];
+        const finishReason = candidate?.finishReason || '';
+        const text = candidate?.content?.parts
             ?.map((part) => typeof part?.text === 'string' ? part.text : '')
             .filter(Boolean)
             .join('\n')
             .trim();
         if (!text) throw new Error('Risposta vuota dal modello.');
+        if (finishReason === 'MAX_TOKENS' && attempt < 1) {
+            return fetchExplain({
+                apiKey,
+                prompt: `${prompt}\n\nRispondi in modo piu compatto, ma senza troncare il testo e senza lasciare frasi a meta.`,
+                attempt: attempt + 1,
+                maxOutputTokens: 3200
+            });
+        }
         return text;
     } finally {
         window.clearTimeout(timeout);

@@ -1,4 +1,4 @@
-import { COMPANY_REQUIRED_FIELDS } from './constants.js?v=20260317-15';
+import { COMPANY_REQUIRED_FIELDS } from './constants.js?v=20260317-23';
 
 /**
  * @typedef {Object} Company
