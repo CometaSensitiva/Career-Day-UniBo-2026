@@ -9,7 +9,7 @@
     "validate:data": "python3 tools/validate_dataset.py --input aziende_dettagli.json --logos-dir logos --stand-map tools/stand_map_2026.json"
   },
   "devDependencies": {
-    "@tailwindcss/cli": "^4.2.1",
+    "@tailwindcss/cli": "^4.3.0",
     "tailwindcss": "^4.2.1"
   }
 }
