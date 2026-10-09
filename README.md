@@ -2,6 +2,14 @@
 
 Dashboard web per orientarsi tra le aziende del Career Day UniBo: filtri, mappa stand, preferenze personali, itinerario e supporto AI.
 
+**[Open the dashboard](https://cometasensitiva.github.io/Career-Day-UniBo-2026/)** · [Architecture](docs/ARCHITECTURE.md)
+
+## Project context
+
+A personal project by Michele Mazza, built to make the 2026 University of Bologna Career Day easier to explore: find companies, compare interests and plan a route before visiting the stands. It combines a static web frontend with Python data preparation and Firebase for personal preferences.
+
+I built it for myself and later proposed it to the university as an idea for improving how students prepare for the event. It is an independent student tool, not an official University of Bologna service. The dataset describes the 2026 event and is not a current directory of open vacancies. Company information and AI-generated overviews should be checked against the original sources.
+
 ## Documentazione
 
 Per navigare la documentazione del progetto:
