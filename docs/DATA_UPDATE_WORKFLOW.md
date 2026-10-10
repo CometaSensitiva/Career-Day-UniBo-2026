@@ -6,10 +6,12 @@ Questa guida serve per aggiornare dataset, stand e loghi del Career Day con un c
 
 ## Prerequisiti
 
-Installa dipendenze Python (una volta sola):
+Da root progetto, crea un ambiente Python e installa le dipendenze (una volta sola):
 
 ```bash
-python3 -m pip install requests beautifulsoup4
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install requests beautifulsoup4
 ```
 
 ## Comando Unico
@@ -33,14 +35,17 @@ python3 tools/update_dashboard.py --year 2026 --limit 10
 
 ## Run Completo per un nuovo anno
 
+Prima verifica che la pagina della nuova edizione esista e crea la relativa mappa stand. Il mapping predefinito è quello del 2026: per un nuovo anno passa sempre il file corretto. Conserva una copia del dataset precedente prima di aggiornare i file.
+
 ```bash
-python3 tools/update_dashboard.py --year 2027
+python3 tools/update_dashboard.py --year 2027 --mapping-file tools/stand_map_2027.json --dry-run
+python3 tools/update_dashboard.py --year 2027 --mapping-file tools/stand_map_2027.json
 ```
 
 Se l'URL del sito cambia formato, passa direttamente `--url`:
 
 ```bash
-python3 tools/update_dashboard.py --url "https://eventi.unibo.it/careerday/aziende-partecipanti-2027"
+python3 tools/update_dashboard.py --url "https://eventi.unibo.it/careerday/aziende-partecipanti-2027" --mapping-file tools/stand_map_2027.json
 ```
 
 ## Opzioni utili
